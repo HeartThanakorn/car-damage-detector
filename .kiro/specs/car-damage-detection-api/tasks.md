@@ -135,7 +135,7 @@ This implementation plan breaks down the Car Damage Detection API into discrete,
   - Scale coordinates appropriately if image is resized for display
   - _Requirements: 3.5, 3.8_
 
-- [ ] 15. Implement JsonViewer component
+- [x] 15. Implement JsonViewer component
 
   - Create `src/components/JsonViewer.tsx` for displaying raw API response
   - Format JSON with proper indentation and syntax highlighting
