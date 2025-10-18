@@ -41,7 +41,7 @@ This implementation plan breaks down the Car Damage Detection API into discrete,
   - Set confidence threshold to 0.25 for filtering low-confidence detections
   - _Requirements: 2.2, 2.3, 2.4_
 
-- [ ] 5. Implement POST /detect endpoint
+- [x] 5. Implement POST /detect endpoint
 
   - Create `/detect` endpoint in `app/main.py` that accepts multipart/form-data
   - Validate uploaded file is an image type (JPEG, PNG, WebP)
