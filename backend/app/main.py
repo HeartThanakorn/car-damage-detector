@@ -1,6 +1,8 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from datetime import datetime
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from datetime import datetime, timezone
 import time
 import logging
 
@@ -35,12 +37,84 @@ app.add_middleware(
 )
 
 
+# Exception Handlers
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Handle Pydantic validation errors (422) and return as 400 Bad Request.
+    
+    This handler catches validation errors from request parsing and formats them
+    using the ErrorResponse model for consistency.
+    """
+    error_details = "; ".join([f"{err['loc'][-1]}: {err['msg']}" for err in exc.errors()])
+    logger.warning(f"Validation error on {request.url.path}: {error_details}")
+    
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            "error": "Validation Error",
+            "detail": f"Request validation failed: {error_details}"
+        }
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Handle HTTP exceptions and format them using ErrorResponse model.
+    
+    This handler ensures all HTTP exceptions return a consistent error format
+    and logs appropriate messages based on the status code.
+    """
+    # Determine error category based on status code
+    if exc.status_code == 400:
+        error_type = "Bad Request"
+        logger.warning(f"Bad request on {request.url.path}: {exc.detail}")
+    elif exc.status_code == 413:
+        error_type = "Payload Too Large"
+        logger.warning(f"File size exceeded on {request.url.path}: {exc.detail}")
+    elif exc.status_code >= 500:
+        error_type = "Internal Server Error"
+        logger.error(f"Server error on {request.url.path}: {exc.detail}")
+    else:
+        error_type = "Error"
+        logger.info(f"HTTP {exc.status_code} on {request.url.path}: {exc.detail}")
+    
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            "error": error_type,
+            "detail": exc.detail
+        }
+    )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Catch-all handler for unexpected exceptions.
+    
+    This handler catches any unhandled exceptions, logs them with full traceback,
+    and returns a generic 500 error to avoid exposing internal details.
+    """
+    logger.error(f"Unhandled exception on {request.url.path}: {str(exc)}", exc_info=True)
+    
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": "Internal Server Error",
+            "detail": "An unexpected error occurred while processing your request"
+        }
+    )
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for monitoring"""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat() + "Z"
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 

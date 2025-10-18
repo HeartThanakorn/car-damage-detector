@@ -47,3 +47,30 @@ def test_health_endpoint():
     assert response.status_code == 200
     assert response.json()['status'] == 'healthy'
     assert 'timestamp' in response.json()
+
+
+def test_error_response_format_for_invalid_file_type():
+    """Test that error responses follow the ErrorResponse model format"""
+    files = {'file': ('test.pdf', b'fake pdf content', 'application/pdf')}
+    response = client.post('/detect', files=files)
+    
+    assert response.status_code == 400
+    json_response = response.json()
+    # Verify ErrorResponse format
+    assert 'error' in json_response
+    assert 'detail' in json_response
+    assert json_response['error'] == 'Bad Request'
+
+
+def test_error_response_format_for_file_size():
+    """Test that file size errors return proper ErrorResponse format"""
+    large_data = b'x' * (11 * 1024 * 1024)
+    files = {'file': ('large.jpg', large_data, 'image/jpeg')}
+    response = client.post('/detect', files=files)
+    
+    assert response.status_code == 413
+    json_response = response.json()
+    # Verify ErrorResponse format
+    assert 'error' in json_response
+    assert 'detail' in json_response
+    assert json_response['error'] == 'Payload Too Large'
