@@ -108,7 +108,7 @@ This implementation plan breaks down the Car Damage Detection API into discrete,
   - Configure API base URL from environment variable
   - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 12. Implement ImageUpload component
+- [x] 12. Implement ImageUpload component
 
   - Create `src/components/ImageUpload.tsx` with file input and preview
   - Implement file type validation (JPEG, PNG, WebP only)
