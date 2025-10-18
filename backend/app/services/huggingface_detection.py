@@ -5,17 +5,15 @@ This module provides AI-powered damage detection using Hugging Face transformers
 Model: beingamit99/car_damage_detection
 """
 
-import io
 import os
 from typing import List, Optional
-from PIL import Image
-import numpy as np
 
 from app.models import Detection
 from app.config import settings
+from app.services.base_detection import BaseDetectionService
 
 
-class HuggingFaceDetectionService:
+class HuggingFaceDetectionService(BaseDetectionService):
     """
     Service for detecting vehicle damages using Hugging Face image classification model.
     
@@ -50,30 +48,6 @@ class HuggingFaceDetectionService:
             print(f"Model loaded successfully!")
         
         return cls._pipeline
-    
-    def preprocess_image(self, image_bytes: bytes) -> Image.Image:
-        """
-        Preprocess image bytes into PIL Image format.
-        
-        Args:
-            image_bytes: Raw image bytes from uploaded file
-            
-        Returns:
-            PIL Image object ready for model inference
-            
-        Raises:
-            ValueError: If image bytes cannot be decoded
-        """
-        try:
-            image = Image.open(io.BytesIO(image_bytes))
-            
-            # Convert to RGB if necessary
-            if image.mode != 'RGB':
-                image = image.convert('RGB')
-            
-            return image
-        except Exception as e:
-            raise ValueError(f"Failed to preprocess image: {str(e)}")
     
     def postprocess_results(self, predictions, image_size) -> List[Detection]:
         """
@@ -142,30 +116,3 @@ class HuggingFaceDetectionService:
         detections = self.postprocess_results(predictions, image_size)
         
         return detections
-    
-    def _generate_mock_detections(self, image_bytes: bytes) -> List[Detection]:
-        """
-        Generate mock detections for testing purposes.
-        
-        Args:
-            image_bytes: Raw bytes of the uploaded image
-            
-        Returns:
-            List of mock Detection objects
-        """
-        try:
-            image = self.preprocess_image(image_bytes)
-            width, height = image.size
-        except:
-            width, height = 640, 480
-        
-        # Mock detection for car damage classification
-        mock_detections = [
-            Detection(
-                bounding_box=(0, 0, width, height),
-                label="damaged",
-                confidence_score=0.89
-            )
-        ]
-        
-        return mock_detections

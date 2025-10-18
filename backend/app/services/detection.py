@@ -5,14 +5,13 @@ This module provides AI-powered damage detection using either YOLO or Hugging Fa
 It handles model loading, image preprocessing, inference, and result post-processing.
 """
 
-import io
 import os
 from typing import List, Optional
-from PIL import Image
 import numpy as np
 
 from app.models import Detection
 from app.config import settings
+from app.services.base_detection import BaseDetectionService
 
 
 def get_detection_service():
@@ -31,7 +30,7 @@ def get_detection_service():
         return DamageDetectionService()
 
 
-class DamageDetectionService:
+class DamageDetectionService(BaseDetectionService):
     """
     Service for detecting vehicle damages using YOLO object detection model.
     
@@ -59,30 +58,6 @@ class DamageDetectionService:
             from ultralytics import YOLO
             cls._model = YOLO(settings.MODEL_PATH)
         return cls._model
-    
-    def preprocess_image(self, image_bytes: bytes) -> Image.Image:
-        """
-        Preprocess image bytes into format expected by YOLO model.
-        
-        Args:
-            image_bytes: Raw image bytes from uploaded file
-            
-        Returns:
-            PIL Image object ready for model inference
-            
-        Raises:
-            ValueError: If image bytes cannot be decoded
-        """
-        try:
-            image = Image.open(io.BytesIO(image_bytes))
-            
-            # Convert to RGB if necessary (handles RGBA, grayscale, etc.)
-            if image.mode != 'RGB':
-                image = image.convert('RGB')
-            
-            return image
-        except Exception as e:
-            raise ValueError(f"Failed to preprocess image: {str(e)}")
     
     def postprocess_results(self, raw_results) -> List[Detection]:
         """
@@ -163,63 +138,3 @@ class DamageDetectionService:
         detections = self.postprocess_results(raw_results)
         
         return detections
-    
-    def _generate_mock_detections(self, image_bytes: bytes) -> List[Detection]:
-        """
-        Generate mock detections for testing purposes.
-        
-        This method returns realistic-looking fake detections without requiring
-        an actual AI model. Useful for:
-        - Frontend development and testing
-        - CI/CD pipelines without model dependencies
-        - Quick prototyping
-        
-        Args:
-            image_bytes: Raw bytes of the uploaded image (used to get dimensions)
-            
-        Returns:
-            List of mock Detection objects
-        """
-        # Get image dimensions for realistic bounding boxes
-        try:
-            image = self.preprocess_image(image_bytes)
-            width, height = image.size
-        except:
-            # Fallback dimensions if image can't be processed
-            width, height = 640, 480
-        
-        # Generate realistic mock detections
-        mock_detections = [
-            Detection(
-                bounding_box=(
-                    int(width * 0.15),
-                    int(height * 0.10),
-                    int(width * 0.45),
-                    int(height * 0.35)
-                ),
-                label="scratch",
-                confidence_score=0.87
-            ),
-            Detection(
-                bounding_box=(
-                    int(width * 0.55),
-                    int(height * 0.40),
-                    int(width * 0.75),
-                    int(height * 0.65)
-                ),
-                label="dent",
-                confidence_score=0.92
-            ),
-            Detection(
-                bounding_box=(
-                    int(width * 0.20),
-                    int(height * 0.60),
-                    int(width * 0.40),
-                    int(height * 0.85)
-                ),
-                label="paint_damage",
-                confidence_score=0.78
-            )
-        ]
-        
-        return mock_detections
