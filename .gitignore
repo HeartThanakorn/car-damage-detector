@@ -205,3 +205,91 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ============================================
+# Car Damage Detection API Project Specific
+# ============================================
+
+# Frontend (React + TypeScript + Vite)
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+frontend/.DS_Store
+frontend/*.local
+
+# Backend (FastAPI + Python)
+backend/__pycache__/
+backend/*.pyc
+backend/.pytest_cache/
+backend/.coverage
+backend/htmlcov/
+backend/.env
+backend/.venv/
+backend/venv/
+backend/*.log
+
+# AI Model weights (large files - download separately)
+backend/models/*.pt
+backend/models/*.pth
+backend/models/*.onnx
+backend/weights/
+
+# AWS CDK
+infrastructure/cdk.out/
+infrastructure/.cdk.staging/
+infrastructure/cdk.context.json
+infrastructure/__pycache__/
+infrastructure/*.pyc
+infrastructure/.venv/
+infrastructure/venv/
+
+# AWS credentials and config (NEVER commit)
+.aws/
+*.pem
+*.key
+
+# Docker
+.dockerignore
+*.tar
+docker-compose.override.yml
+
+# Uploaded images (local testing)
+uploads/
+temp_images/
+test_uploads/
+
+# IDE and Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Temporary files
+tmp/
+temp/
+*.tmp
