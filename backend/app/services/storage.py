@@ -1,5 +1,7 @@
 import uuid
 import logging
+import os
+from pathlib import Path
 from typing import BinaryIO
 import boto3
 from botocore.exceptions import ClientError, BotoCoreError
@@ -10,13 +12,22 @@ logger = logging.getLogger(__name__)
 
 
 class StorageService:
-    """Service for handling S3 storage operations"""
+    """Service for handling S3 storage operations with local mode support"""
     
     def __init__(self):
-        """Initialize the S3 client with configuration from environment"""
-        self.s3_client = boto3.client('s3')
-        self.bucket_name = settings.S3_BUCKET_NAME
-        logger.info(f"StorageService initialized with bucket: {self.bucket_name}")
+        """Initialize the storage service with S3 or local filesystem"""
+        self.use_local = os.getenv('USE_LOCAL_STORAGE', 'true').lower() == 'true'
+        
+        if self.use_local:
+            # Use local filesystem storage
+            self.local_path = Path('uploads')
+            self.local_path.mkdir(exist_ok=True)
+            logger.info(f"StorageService initialized in LOCAL mode: {self.local_path}")
+        else:
+            # Use S3 storage
+            self.s3_client = boto3.client('s3')
+            self.bucket_name = settings.S3_BUCKET_NAME
+            logger.info(f"StorageService initialized in S3 mode: bucket={self.bucket_name}")
     
     def generate_image_id(self) -> str:
         """
@@ -29,7 +40,7 @@ class StorageService:
     
     def upload_image(self, image_bytes: bytes, image_id: str, content_type: str = "image/jpeg") -> str:
         """
-        Upload image bytes to S3 with proper content type.
+        Upload image bytes to S3 or local filesystem.
         
         Args:
             image_bytes: The image data as bytes
@@ -37,18 +48,39 @@ class StorageService:
             content_type: MIME type of the image (default: image/jpeg)
         
         Returns:
-            str: The S3 object key where the image was stored
+            str: The storage key/path where the image was stored
         
         Raises:
-            Exception: If the S3 upload fails after error handling
+            Exception: If the upload fails
         """
-        # Construct the S3 key with uploads prefix
+        if self.use_local:
+            return self._upload_local(image_bytes, image_id)
+        else:
+            return self._upload_s3(image_bytes, image_id, content_type)
+    
+    def _upload_local(self, image_bytes: bytes, image_id: str) -> str:
+        """Upload image to local filesystem"""
+        try:
+            file_path = self.local_path / f"{image_id}.jpg"
+            logger.info(f"Saving image locally: {file_path}")
+            
+            with open(file_path, 'wb') as f:
+                f.write(image_bytes)
+            
+            logger.info(f"Successfully saved image: {file_path}")
+            return str(file_path)
+            
+        except Exception as e:
+            logger.error(f"Failed to save image locally: {str(e)}")
+            raise Exception(f"Failed to save image locally: {str(e)}") from e
+    
+    def _upload_s3(self, image_bytes: bytes, image_id: str, content_type: str) -> str:
+        """Upload image to S3"""
         key = f"uploads/{image_id}.jpg"
         
         try:
             logger.info(f"Uploading image to S3: bucket={self.bucket_name}, key={key}")
             
-            # Upload the image to S3
             self.s3_client.put_object(
                 Bucket=self.bucket_name,
                 Key=key,
