@@ -99,7 +99,7 @@ This implementation plan breaks down the Car Damage Detection API into discrete,
   - Set up Bootstrap CSS imports in main entry point
   - _Requirements: 8.1, 8.2, 8.3_
 
-- [ ] 11. Implement TypeScript types and API service
+- [x] 11. Implement TypeScript types and API service
 
   - Create `src/types/detection.ts` with Detection, DetectionResponse, and ErrorResponse interfaces
   - Create `src/services/api.ts` with DamageDetectionAPI class
