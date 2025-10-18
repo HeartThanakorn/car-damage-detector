@@ -156,7 +156,7 @@ This implementation plan breaks down the Car Damage Detection API into discrete,
   - Organize UI into sections using Bootstrap grid and card components
   - _Requirements: 1.3, 1.4, 3.8, 4.3, 8.3, 8.4_
 
-- [ ] 17. Write frontend unit tests
+- [x] 17. Write frontend unit tests
 
   - Install Jest and React Testing Library as dev dependencies
   - Configure Jest for TypeScript and React
