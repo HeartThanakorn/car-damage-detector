@@ -6,6 +6,7 @@ It handles model loading, image preprocessing, inference, and result post-proces
 """
 
 import io
+import os
 from typing import List, Optional
 from PIL import Image
 import numpy as np
@@ -27,6 +28,7 @@ class DamageDetectionService:
     def __init__(self):
         """Initialize the detection service."""
         self.confidence_threshold = settings.CONFIDENCE_THRESHOLD
+        self.use_mock = os.getenv('USE_MOCK_MODEL', 'false').lower() == 'true'
     
     @classmethod
     def load_model(cls):
@@ -128,6 +130,10 @@ class DamageDetectionService:
             ValueError: If image preprocessing fails
             Exception: If model inference fails
         """
+        # Mock mode for testing without AI model
+        if self.use_mock:
+            return self._generate_mock_detections(image_bytes)
+        
         # Load model (singleton pattern ensures it's only loaded once)
         model = self.load_model()
         
@@ -141,3 +147,63 @@ class DamageDetectionService:
         detections = self.postprocess_results(raw_results)
         
         return detections
+    
+    def _generate_mock_detections(self, image_bytes: bytes) -> List[Detection]:
+        """
+        Generate mock detections for testing purposes.
+        
+        This method returns realistic-looking fake detections without requiring
+        an actual AI model. Useful for:
+        - Frontend development and testing
+        - CI/CD pipelines without model dependencies
+        - Quick prototyping
+        
+        Args:
+            image_bytes: Raw bytes of the uploaded image (used to get dimensions)
+            
+        Returns:
+            List of mock Detection objects
+        """
+        # Get image dimensions for realistic bounding boxes
+        try:
+            image = self.preprocess_image(image_bytes)
+            width, height = image.size
+        except:
+            # Fallback dimensions if image can't be processed
+            width, height = 640, 480
+        
+        # Generate realistic mock detections
+        mock_detections = [
+            Detection(
+                bounding_box=(
+                    int(width * 0.15),
+                    int(height * 0.10),
+                    int(width * 0.45),
+                    int(height * 0.35)
+                ),
+                label="scratch",
+                confidence_score=0.87
+            ),
+            Detection(
+                bounding_box=(
+                    int(width * 0.55),
+                    int(height * 0.40),
+                    int(width * 0.75),
+                    int(height * 0.65)
+                ),
+                label="dent",
+                confidence_score=0.92
+            ),
+            Detection(
+                bounding_box=(
+                    int(width * 0.20),
+                    int(height * 0.60),
+                    int(width * 0.40),
+                    int(height * 0.85)
+                ),
+                label="paint_damage",
+                confidence_score=0.78
+            )
+        ]
+        
+        return mock_detections
