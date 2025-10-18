@@ -1,7 +1,7 @@
 """
 Damage Detection Service
 
-This module provides AI-powered damage detection using a pre-trained YOLO model.
+This module provides AI-powered damage detection using either YOLO or Hugging Face models.
 It handles model loading, image preprocessing, inference, and result post-processing.
 """
 
@@ -13,6 +13,22 @@ import numpy as np
 
 from app.models import Detection
 from app.config import settings
+
+
+def get_detection_service():
+    """
+    Factory function to get the appropriate detection service based on configuration.
+    
+    Returns:
+        DamageDetectionService or HuggingFaceDetectionService based on MODEL_TYPE setting
+    """
+    model_type = settings.MODEL_TYPE.lower()
+    
+    if model_type == "huggingface":
+        from app.services.huggingface_detection import HuggingFaceDetectionService
+        return HuggingFaceDetectionService()
+    else:
+        return DamageDetectionService()
 
 
 class DamageDetectionService:

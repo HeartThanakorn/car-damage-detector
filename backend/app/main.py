@@ -7,7 +7,7 @@ import time
 import logging
 
 from app.models import DetectionResponse, ErrorResponse
-from app.services.detection import DamageDetectionService
+from app.services.detection import get_detection_service
 from app.services.storage import StorageService
 from app.config import settings
 
@@ -189,9 +189,9 @@ async def detect_damage(file: UploadFile = File(...)):
                 detail=f"Failed to store image: {str(e)}"
             )
         
-        # Process image using DamageDetectionService to get detections
+        # Process image using detection service to get detections
         try:
-            detection_service = DamageDetectionService()
+            detection_service = get_detection_service()
             detections = detection_service.detect_damages(image_bytes)
             logger.info(f"Detection complete: found {len(detections)} damages")
         except ValueError as e:

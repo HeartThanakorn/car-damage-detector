@@ -14,6 +14,8 @@ class Settings:
     
     # Model Configuration
     MODEL_PATH: str = os.getenv("MODEL_PATH", "models/yolov8n.pt")
+    MODEL_TYPE: str = os.getenv("MODEL_TYPE", "huggingface")  # "yolo" or "huggingface"
+    HUGGINGFACE_MODEL: str = os.getenv("HUGGINGFACE_MODEL", "beingamit99/car_damage_detection")
     CONFIDENCE_THRESHOLD: float = float(os.getenv("CONFIDENCE_THRESHOLD", "0.25"))
     
     # File Upload Configuration
