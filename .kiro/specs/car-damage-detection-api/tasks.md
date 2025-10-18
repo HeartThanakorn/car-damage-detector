@@ -60,7 +60,7 @@ This implementation plan breaks down the Car Damage Detection API into discrete,
   - Add logging for errors to facilitate debugging
   - _Requirements: 4.1, 4.3_
 
-- [ ] 7. Write backend unit and integration tests
+- [x] 7. Write backend unit and integration tests
 
   - Create `tests/conftest.py` with pytest fixtures for test client and sample images
   - Write unit tests in `tests/test_detection.py` for DamageDetectionService (mock YOLO model)
